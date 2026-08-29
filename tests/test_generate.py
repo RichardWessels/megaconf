@@ -137,7 +137,7 @@ class TestProductSampling:
         ]
 
         assert len(results) == 10
-        assert len(set(sampled_pairs)) < set(product([0.1, 0.01], [10, 20, 30])) 
+        assert len(set(sampled_pairs)) < len(set(product([0.1, 0.01], [10, 20, 30])) )
 
     def test_without_replacement_yields_unique_product_combinations(self, base_config: dict):
         results = generate_configs_list(
@@ -152,7 +152,7 @@ class TestProductSampling:
             for config in results
         ]
 
-        assert len(set(sampled_pairs)) == set(product([0.1, 0.01], [10, 20, 30]))
+        assert len(set(sampled_pairs)) == len(set(product([0.1, 0.01], [10, 20, 30])))
 
     def test_without_replacement_rejects_sample_count_above_product_size(self, base_config: dict):
         with pytest.raises(ValueError):
