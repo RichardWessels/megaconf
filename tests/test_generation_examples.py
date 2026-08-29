@@ -104,6 +104,66 @@ class TestProductOverrides:
         assert results == []
 
 
+class TestProductSampling:
+
+    overrides = [
+        {
+            "product": {
+                "train.lr": [0.1, 0.01],
+                "train.epochs": [10, 20, 30],
+            }
+        }
+    ]
+
+    def test_sampling_requires_sample_count(self, base_config: dict):
+        with pytest.raises(ValueError):
+            generate_configs_list(
+                base_config,
+                overrides=self.overrides,
+                sampling="without_replacement"
+            )
+
+    def test_with_replacement_can_return_more_samples_than_product_size(self, base_config: dict):
+        results = generate_configs_list(
+            base_config,
+            overrides=self.overrides,
+            sampling="with_replacement",
+            n_samples=10
+        )
+
+        sampled_pairs = [
+            (config["train"]["lr"], config["train"]["epochs"])
+            for config in results
+        ]
+
+        assert len(results) == 10
+        assert len(set(sampled_pairs)) < set(product([0.1, 0.01], [10, 20, 30])) 
+
+    def test_without_replacement_yields_unique_product_combinations(self, base_config: dict):
+        results = generate_configs_list(
+            base_config,
+            overrides=self.overrides,
+            sampling="without_replacement",
+            n_samples=6
+        )
+
+        sampled_pairs = [
+            (config["train"]["lr"], config["train"]["epochs"])
+            for config in results
+        ]
+
+        assert len(set(sampled_pairs)) == set(product([0.1, 0.01], [10, 20, 30]))
+
+    def test_without_replacement_rejects_sample_count_above_product_size(self, base_config: dict):
+        with pytest.raises(ValueError):
+            generate_configs_list(
+                base_config,
+                overrides=self.overrides,
+                sampling="without_replacement",
+                n_samples=10
+            )
+
+
 class TestCombinedBehavior:
     # TODO: test value rather than just count
     def test_fixed_joint_product_can_be_combined(self, base_config: dict):
