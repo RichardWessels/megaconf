@@ -203,6 +203,6 @@ However, if a dot conflicts with your key strings, you can specify a custom key 
 configs = generate_configs(
     "base_config.yaml",
     "overrides.yaml",
-    key_seperator="::"
+    key_separator="::"
 )
 ```

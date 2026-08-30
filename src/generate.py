@@ -1,110 +1,116 @@
-import json
+from collections.abc import Iterator
 from copy import deepcopy
-from itertools import product
-from os import PathLike
 from pathlib import Path
-from typing import Any
+from typing import Literal
 
-import numpy as np
-from pydantic import BaseModel, Field, TypeAdapter
-from yaml import safe_load
+from pydantic import TypeAdapter
 
+from src.expansion import get_joint_generator, get_product_generator
+from src.inputs import load_data_from_file
+from src.models import BaseConfigInput, Override, OverridesInput
 from src.utils import convert_flat_dict_to_nested_dict, deep_update_dict
 
 
-class Override(BaseModel):  # pylint: disable=missing-class-docstring
-    # add validation logic to ensure joint has equal length lists
-    fixed: dict = Field(default_factory=dict)
-    joint: dict[str, list] = Field(default_factory=dict)
-    product: dict[str, list] = Field(default_factory=dict)
+def _generate_configs(
+    base_config: dict,
+    overrides: list[Override],
+    key_separator: str,
+    sampling: Literal["without_replacement", "with_replacement"] | None = None,
+    n_samples: int | None = None,
+) -> Iterator[dict]:
+    """Generate merged configs for all fixed, joint, and product combinations.
 
+    Args:
+        base_config: Base configuration to copy and update.
+        overrides: Validated override groups.
+        key_separator: Separator for flat keys that target nested fields.
+        sampling: Optional sampling mode for product combinations.
+        n_samples: Number of product combinations to sample.
 
-type ConfigDict = dict[str, Any]
-type BaseConfigInput = ConfigDict | str | PathLike[str]
-type OverridesInput = list[dict[str, Any]] | str | PathLike[str]
+    Yields:
+        Fully merged configuration dictionaries.
+    """
 
+    for override in overrides:
+        fixed = override.fixed
 
-def _expand_joint(joint: dict[str, list]) -> list[dict]:
-    # expand joint
+        for joint_conf in get_joint_generator(override.joint):
+            # NOTE: only product space is sampled
+            for prod_conf in get_product_generator(
+                override.product, sampling=sampling, n_samples=n_samples
+            ):
+                new_config = deepcopy(base_config)
+                override_dict = fixed | joint_conf | prod_conf
 
-    if not joint:
-        return []
+                override_dict = convert_flat_dict_to_nested_dict(override_dict, key_separator)
+                new_config = deep_update_dict(new_config, override_dict)
 
-    if len(np.unique([len(joint_value) for joint_value in joint.values()])) > 1:
-        raise ValueError("Joint update requires lists of equal length")
-
-    joint_expanded = []
-    for key, value in joint.items():
-        joint_expanded.append([(key, value) for value in value])
-
-    joint_expanded = list(zip(*joint_expanded, strict=True))
-
-    return [dict(e) for e in joint_expanded]
-
-
-def _expand_product(prod: dict[str, list]) -> list[dict]:
-    # TODO: should change later since expanding this is high memory
-
-    product_expanded = []
-    for key, value in prod.items():
-        product_expanded.append([(key, v) for v in value])
-    product_expanded = list(product(*product_expanded))
-
-    return [dict(e) for e in product_expanded]
-
-
-def _load_data_from_file(file_path: Path | str) -> Any:
-    file_path = Path(file_path)
-
-    with open(file_path, encoding="utf-8") as f:
-        if file_path.suffix in [".yaml", ".yml"]:
-            return safe_load(f)
-        if file_path.suffix == ".json":
-            return json.load(f)
-        raise ValueError("File must end in `.yaml`, `.yml` or `.json`.")
+                yield new_config
 
 
 def generate_configs(
-    base_config: BaseConfigInput, overrides: OverridesInput | None, key_separator="."
-) -> list:
-    if not overrides:  # NOTE: need to confirm that this general falsy check is not a problem
-        return []
+    base_config: BaseConfigInput,
+    overrides: OverridesInput | None,
+    key_separator=".",
+    sampling: Literal["without_replacement", "with_replacement"] | None = None,
+    n_samples: int | None = None,
+) -> Iterator[dict]:
+    """Generate configurations from a base config and override definitions.
+
+    Args:
+        base_config: Base config dictionary or path to YAML/JSON.
+        overrides: Override list or path to YAML/JSON override definitions.
+        key_separator: Separator used in flat override keys for nesting.
+        sampling: Optional sampling mode for product combinations.
+        n_samples: Number of product combinations to sample.
+
+    Returns:
+        An iterator of generated configuration dictionaries.
+
+    Raises:
+        ValueError: If base config does not resolve to a dictionary.
+    """
 
     if not isinstance(base_config, dict):
         path = Path(base_config)
-        base_config = _load_data_from_file(path)
+        base_config = load_data_from_file(path)
 
-    if not isinstance(overrides, list):
+    if isinstance(overrides, (str, Path)):
         path = Path(overrides)
-        overrides = _load_data_from_file(path)
+        overrides = load_data_from_file(path)
 
     # validation
     if not isinstance(base_config, dict):
         raise ValueError("Base config must be a dictionary.")
     overrides_validated = TypeAdapter(list[Override]).validate_python(overrides)
 
-    return _generate_configs(base_config, overrides_validated, key_separator)
+    if not overrides:  # NOTE: need to confirm that this general falsy check is not a problem
+        yield base_config
+        return
+
+    yield from _generate_configs(
+        base_config, overrides_validated, key_separator, sampling, n_samples
+    )
 
 
-def _generate_configs(base_config: dict, overrides: list[Override], key_separator: str) -> list:
-    outputs = []
+def generate_configs_list(
+    base_config: BaseConfigInput,
+    overrides: OverridesInput | None,
+    key_separator=".",
+    sampling: Literal["without_replacement", "with_replacement"] | None = None,
+    n_samples: int | None = None,
+) -> list[dict]:
+    """Return generated configurations as a list.
 
-    for override in overrides:
-        fixed_expanded = [override.fixed]
-        joint_expanded = _expand_joint(override.joint) or [{}]
-        prod_expanded = _expand_product(override.product) or [{}]
+    Args:
+        base_config: Base config dictionary or path to YAML/JSON.
+        overrides: Override list or path to YAML/JSON override definitions.
+        key_separator: Separator used in flat override keys for nesting.
+        sampling: Optional sampling mode for product combinations.
+        n_samples: Number of product combinations to sample.
 
-        for fixed_item, joint_item, prod_item in product(
-            fixed_expanded, joint_expanded, prod_expanded
-        ):
-            if not fixed_item and not joint_item and not prod_item:
-                continue
-            new_config = deepcopy(base_config)
+    Returns:
+        All generated configurations materialized in a list.
+    """
 
-            updated_dict = fixed_item | joint_item | prod_item
-            updated_dict = convert_flat_dict_to_nested_dict(updated_dict, key_separator)
-            new_config = deep_update_dict(new_config, updated_dict)
-
-            outputs.append(new_config)
-
-    return outputs
+    return list(generate_configs(base_config, overrides, key_separator, sampling, n_samples))

@@ -22,7 +22,7 @@ def convert_flat_dict_to_nested_dict(
                 else:
                     raise RuntimeError(
                         f"Duplicate key found: '{composite_key}'. "
-                        "Set `overrides_duplicates`=True to skip this error."
+                        "Set `override_duplicates`=True to skip this error."
                     )
             current_dict[key] = current_dict.get(key, {})
             current_dict = current_dict[key]
@@ -32,7 +32,7 @@ def convert_flat_dict_to_nested_dict(
         if key in current_dict and not override_duplicates:
             raise RuntimeError(
                 f"Duplicate key found: '{composite_key}'. "
-                "Set `overrides_duplicates`=True to skip this error."
+                "Set `override_duplicates`=True to skip this error."
             )
         current_dict[key] = value
     return output_dict
