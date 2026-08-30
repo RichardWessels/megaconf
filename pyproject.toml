@@ -1,42 +1,34 @@
 [project]
 name = "megaconf"
 version = "0.1.0"
-description = "Add your description here"
+description = "Easily create many variations of a config."
 readme = "README.md"
+authors = [
+    { name = "Richard Wessels" }
+]
 requires-python = ">=3.12"
 dependencies = [
-    "pandas>=3.0.1",
-    "pydantic>=2.12.5",
+    "numpy>=2.5.2",
+    "pydantic>=2.13.5",
     "pyyaml>=6.0.3",
 ]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICENSE"]
+
+[project.urls]
+Homepage = "https://github.com/RichardWessels/megaconf"
+Issues = "https://github.com/RichardWessels/megaconf/issues"
 
 [dependency-groups]
 dev = [
-    "pytest>=9.0.2",
-    "ruff>=0.15.4",
+    "pytest>=9.1.1",
+    "ruff>=0.16.5",
 ]
 
-[tool.ruff]
-line-length = 100
-
-[tool.ruff.lint]
-select = [
-    "E",
-    "F",
-    "W",
-    "I",
-    "N",
-    "UP",
-    "B",
-    "A",
-    "C4",
-    "SIM",
-    "RET",
-    "PTH",
-    "RUF",
-    "PL",
-]
-ignore = [
-    "COM812",
-    "PTH123"
-]
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"

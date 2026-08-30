@@ -1,10 +1,10 @@
-# MegaConf
+# megaconf
 
-MegaConf is a tool to help with producing configs. This tool allows you to describe configuration combinations declaratively, instead of writing nested loops in code.
+megaconf is a tool to help with producing configs. This tool allows you to describe configuration combinations declaratively, instead of writing nested loops in code.
 
 ## How it works
 
-MegaConf generates configurations from two inputs:
+megaconf generates configurations from two inputs:
 
 1. Base config – a starting configuration.
 2. Override config – rules describing how to modify the base config to produce multiple variants.
@@ -38,7 +38,7 @@ for algo in ["XGBoost", "NN"]:
 
 As the number of parameters and dependencies grows, this approach becomes hard to maintain.
 
-MegaConf allows expressing the same logic using override rules.
+megaconf allows expressing the same logic using override rules.
 
 Override Config:
 ```yaml
@@ -59,7 +59,7 @@ Override Config:
 
 ## Override Methods
 
-MegaConf supports three override methods.
+megaconf supports three override methods.
 
 ---
 
@@ -138,17 +138,22 @@ The final configs are the combination of these rules applied to the base config.
 
 ## Interface
 
-Creating configs is done with the function `generate_configs`. It accepts a base config as well as an overrides config. 
+Create configurations with `generate_configs`. It accepts a base config and an
+overrides config.
 
 Both inputs can be provided in two ways:
 - as a Python object (e.g., a dictionary or list).
 - as a path to a configuration file (.yaml, .yml, or .json).
 
-The result of this function is a list with each element containing a generated config. The number of generated configs depends on the combinations produced by the override rules.
+`generate_configs` returns an iterator that yields each generated config. The
+number of generated configs depends on the combinations produced by the override
+rules. Use `generate_configs_list` if you need all generated configs in a list.
 
 Example usage:
 
 ```python
+from megaconf import generate_configs
+
 base_config = {
     "algo": "NN",
     "lr": 0.001,
@@ -203,6 +208,6 @@ However, if a dot conflicts with your key strings, you can specify a custom key 
 configs = generate_configs(
     "base_config.yaml",
     "overrides.yaml",
-    key_seperator="::"
+    key_separator="::"
 )
 ```
