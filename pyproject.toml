@@ -1,10 +1,10 @@
 [project]
 name = "megaconf"
 version = "0.1.0"
-description = "Add your description here"
+description = "Easily create many variations of a config."
 readme = "README.md"
 authors = [
-    { name = "Richard", email = "TODO" }
+    { name = "Richard Wessels" }
 ]
 requires-python = ">=3.12"
 dependencies = [
@@ -13,12 +13,19 @@ dependencies = [
     "pyyaml>=6.0.3",
 ]
 
-[build-system]
-requires = ["uv_build>=0.12.5,<0.13.0"]
-build-backend = "uv_build"
-
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
     "ruff>=0.16.5",
 ]
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
