@@ -27,23 +27,25 @@ class TestCommonBehavior:
         assert results == [base_config]
 
     def test_none_overrides_raise_validation_error(self, base_config: dict):
-            with pytest.raises(ValidationError):
-                _ = generate_configs_list(base_config, None)
+        with pytest.raises(ValidationError):
+            _ = generate_configs_list(base_config, None)
 
     def test_base_and_overrides_are_not_mutated(self, base_config: dict):
-            overrides = [{"fixed": {"train.lr": 0.5}}]
-            base_before = deepcopy(base_config)
-            overrides_before = deepcopy(overrides)
-    
-            _ = generate_configs_list(base_config, overrides)
-    
-            assert base_config == base_before
-            assert overrides == overrides_before
+        overrides = [{"fixed": {"train.lr": 0.5}}]
+        base_before = deepcopy(base_config)
+        overrides_before = deepcopy(overrides)
+
+        _ = generate_configs_list(base_config, overrides)
+
+        assert base_config == base_before
+        assert overrides == overrides_before
 
 
 class TestFixedOverrides:
     def test_fixed_overrides_replace_and_add(self, base_config: dict):
-        overrides = [{"fixed": {"model.type": "regression", "train.weight_decay": 0.01}}]
+        overrides = [
+            {"fixed": {"model.type": "regression", "train.weight_decay": 0.01}}
+        ]
 
         results = generate_configs_list(base_config, overrides)
 
@@ -105,7 +107,6 @@ class TestProductOverrides:
 
 
 class TestProductSampling:
-
     overrides = [
         {
             "product": {
@@ -118,49 +119,51 @@ class TestProductSampling:
     def test_sampling_requires_sample_count(self, base_config: dict):
         with pytest.raises(ValueError):
             generate_configs_list(
-                base_config,
-                overrides=self.overrides,
-                sampling="without_replacement"
+                base_config, overrides=self.overrides, sampling="without_replacement"
             )
 
-    def test_with_replacement_can_return_more_samples_than_product_size(self, base_config: dict):
+    def test_with_replacement_can_return_more_samples_than_product_size(
+        self, base_config: dict
+    ):
         results = generate_configs_list(
             base_config,
             overrides=self.overrides,
             sampling="with_replacement",
-            n_samples=10
+            n_samples=10,
         )
 
         sampled_pairs = [
-            (config["train"]["lr"], config["train"]["epochs"])
-            for config in results
+            (config["train"]["lr"], config["train"]["epochs"]) for config in results
         ]
 
         assert len(results) == 10
-        assert len(sampled_pairs) > len(set(product([0.1, 0.01], [10, 20, 30])) )
+        assert len(sampled_pairs) > len(set(product([0.1, 0.01], [10, 20, 30])))
 
-    def test_without_replacement_yields_unique_product_combinations(self, base_config: dict):
+    def test_without_replacement_yields_unique_product_combinations(
+        self, base_config: dict
+    ):
         results = generate_configs_list(
             base_config,
             overrides=self.overrides,
             sampling="without_replacement",
-            n_samples=6
+            n_samples=6,
         )
 
         sampled_pairs = [
-            (config["train"]["lr"], config["train"]["epochs"])
-            for config in results
+            (config["train"]["lr"], config["train"]["epochs"]) for config in results
         ]
 
         assert len(set(sampled_pairs)) == len(set(product([0.1, 0.01], [10, 20, 30])))
 
-    def test_without_replacement_rejects_sample_count_above_product_size(self, base_config: dict):
+    def test_without_replacement_rejects_sample_count_above_product_size(
+        self, base_config: dict
+    ):
         with pytest.raises(ValueError):
             generate_configs_list(
                 base_config,
                 overrides=self.overrides,
                 sampling="without_replacement",
-                n_samples=10
+                n_samples=10,
             )
 
 
@@ -170,8 +173,14 @@ class TestCombinedBehavior:
         overrides = [
             {
                 "fixed": {"model.type": "fixed"},
-                "joint": {"model.type": ["joint-1", "joint-2"], "train.lr": [0.1, 0.01]},
-                "product": {"model.type": ["prod-a", "prod-b"], "train.epochs": [10, 20]},
+                "joint": {
+                    "model.type": ["joint-1", "joint-2"],
+                    "train.lr": [0.1, 0.01],
+                },
+                "product": {
+                    "model.type": ["prod-a", "prod-b"],
+                    "train.epochs": [10, 20],
+                },
             }
         ]
 
@@ -194,8 +203,12 @@ class TestCombinedBehavior:
         assert len(results) == 1
         assert results[0]["model"]["type"] == "from-product"
 
-    def test_fixed_applies_before_product_within_override_block(self, base_config: dict):
-        overrides = [{"fixed": {"model.type": "one"}, "product": {"train.lr": [0.1, 0.01]}}]
+    def test_fixed_applies_before_product_within_override_block(
+        self, base_config: dict
+    ):
+        overrides = [
+            {"fixed": {"model.type": "one"}, "product": {"train.lr": [0.1, 0.01]}}
+        ]
 
         results = generate_configs_list(base_config, overrides)
 
