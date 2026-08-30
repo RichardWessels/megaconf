@@ -26,7 +26,9 @@ class Override(BaseModel):
         lengths = {key: len(value) for key, value in joint.items()}
 
         if len(set(lengths.values())) > 1:
-            raise ValueError(f"All lists in 'joint' must have equal length. Got lengths: {lengths}")
+            raise ValueError(
+                f"All lists in 'joint' must have equal length. Got lengths: {lengths}"
+            )
 
         return joint
 

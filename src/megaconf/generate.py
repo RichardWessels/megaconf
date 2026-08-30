@@ -5,10 +5,10 @@ from typing import Literal
 
 from pydantic import TypeAdapter
 
-from src.expansion import get_joint_generator, get_product_generator
-from src.inputs import load_data_from_file
-from src.models import BaseConfigInput, Override, OverridesInput
-from src.utils import convert_flat_dict_to_nested_dict, deep_update_dict
+from .expansion import get_joint_generator, get_product_generator
+from .inputs import load_data_from_file
+from .models import BaseConfigInput, Override, OverridesInput
+from .utils import convert_flat_dict_to_nested_dict, deep_update_dict
 
 
 def _generate_configs(
@@ -42,7 +42,9 @@ def _generate_configs(
                 new_config = deepcopy(base_config)
                 override_dict = fixed | joint_conf | prod_conf
 
-                override_dict = convert_flat_dict_to_nested_dict(override_dict, key_separator)
+                override_dict = convert_flat_dict_to_nested_dict(
+                    override_dict, key_separator
+                )
                 new_config = deep_update_dict(new_config, override_dict)
 
                 yield new_config
@@ -84,7 +86,9 @@ def generate_configs(
         raise ValueError("Base config must be a dictionary.")
     overrides_validated = TypeAdapter(list[Override]).validate_python(overrides)
 
-    if not overrides:  # NOTE: need to confirm that this general falsy check is not a problem
+    if (
+        not overrides
+    ):  # NOTE: need to confirm that this general falsy check is not a problem
         yield base_config
         return
 
@@ -113,4 +117,6 @@ def generate_configs_list(
         All generated configurations materialized in a list.
     """
 
-    return list(generate_configs(base_config, overrides, key_separator, sampling, n_samples))
+    return list(
+        generate_configs(base_config, overrides, key_separator, sampling, n_samples)
+    )

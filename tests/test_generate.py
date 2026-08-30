@@ -8,7 +8,7 @@ import pytest
 from pydantic import ValidationError
 from yaml import safe_dump
 
-from src.generate import generate_configs, generate_configs_list
+from megaconf.generate import generate_configs, generate_configs_list
 
 
 @pytest.fixture

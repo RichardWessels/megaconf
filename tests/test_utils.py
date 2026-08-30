@@ -2,7 +2,7 @@ from copy import deepcopy
 
 import pytest
 
-from src.utils import convert_flat_dict_to_nested_dict, deep_update_dict
+from megaconf.utils import convert_flat_dict_to_nested_dict, deep_update_dict
 
 
 class TestConvertFlatDictToNestedDict:
