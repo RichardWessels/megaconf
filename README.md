@@ -2,6 +2,8 @@
 
 megaconf is a tool to help with producing configs. This tool allows you to describe configuration combinations declaratively, instead of writing nested loops in code.
 
+For short, practical patterns, see `examples/`.
+
 ## How it works
 
 megaconf generates configurations from two inputs:
@@ -125,6 +127,39 @@ lr=0.01  layer_count=4
 ```
 
 This is equivalent to a grid search.
+
+## Sampling a Large Product Space
+
+When the `product` grid is too large to run exhaustively, pass `sampling` and
+`n_samples` to select a subset of its combinations. Use
+`"without_replacement"` to ensure that every selected product combination is
+unique, or `"with_replacement"` when repeats are acceptable.
+
+```python
+import random
+
+from megaconf import generate_configs
+
+base = {"dataset": "reviews"}
+overrides = [{
+    "product": {
+        "train.learning_rate": [1e-5, 3e-5, 1e-4, 3e-4],
+        "train.batch_size": [32, 64, 128],
+        "model.hidden_dim": [256, 512, 768],
+    },
+}]
+
+configs = generate_configs(
+    base,
+    overrides,
+    sampling="without_replacement",
+    n_samples=16,
+)
+```
+
+Sampling applies only to `product` combinations. If an override also contains
+`joint` values, `n_samples` product combinations are selected for each joint
+combination.
 
 ## How Overrides Are Combined
 
