@@ -76,7 +76,7 @@ class TestJointOverrides:
     def test_joint_mismatched_lengths_raise(self, base_config: dict):
         overrides = [{"joint": {"train.lr": [0.1], "model.name": ["a", "b"]}}]
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             _ = list(generate_configs(base_config, overrides))
 
 
@@ -165,6 +165,13 @@ class TestProductSampling:
                 sampling="without_replacement",
                 n_samples=10,
             )
+
+    def test_invalid_base_config_raises_value_error(self, tmp_path: Path):
+        config_path = tmp_path / "config.yaml"
+        config_path.write_text("Not valid YAML", encoding="utf-8")
+
+        with pytest.raises(ValueError, match="Base config"):
+            generate_configs_list(config_path, [{}])
 
 
 class TestCombinedBehavior:

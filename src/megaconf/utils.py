@@ -1,12 +1,29 @@
 from copy import deepcopy
 from typing import Any
 
+from .exceptions import FlatKeyConflictError
+
 
 def convert_flat_dict_to_nested_dict(
     dictionary: dict[str, Any], key_separator=".", override_duplicates=False
 ) -> dict:
-    """
-    Convert from format: {"k1.k2": value} -> {"k1": {"k2": value}}
+    """Convert a dictionary with separator-delimited keys into nested dictionaries.
+
+    Example: ``{"k1.k2": value} -> {"k1": {"k2": value}}``.
+
+    Args:
+        dictionary: Mapping of flattened keys to values.
+        key_separator: String used to split each flattened key into path segments.
+        override_duplicates: Whether to replace conflicts instead of raising an
+            error.
+
+    Returns:
+        A newly constructed dictionary with keys expanded into nested
+        dictionaries.
+
+    Raises:
+        FlatKeyConflictError: If flattened keys define conflicting paths and
+            ``override_duplicates`` is ``False``.
     """
     output_dict = {}
 
@@ -20,9 +37,9 @@ def convert_flat_dict_to_nested_dict(
                 if override_duplicates:
                     current_dict[key] = {}
                 else:
-                    raise RuntimeError(
+                    raise FlatKeyConflictError(
                         f"Duplicate key found: '{composite_key}'. "
-                        "Set `override_duplicates`=True to skip this error."
+                        "Set `override_duplicates=True` to skip this error."
                     )
             current_dict[key] = current_dict.get(key, {})
             current_dict = current_dict[key]
@@ -30,18 +47,23 @@ def convert_flat_dict_to_nested_dict(
         # write value
         key = key_list[-1]
         if key in current_dict and not override_duplicates:
-            raise RuntimeError(
+            raise FlatKeyConflictError(
                 f"Duplicate key found: '{composite_key}'. "
-                "Set `override_duplicates`=True to skip this error."
+                "Set `override_duplicates=True` to skip this error."
             )
         current_dict[key] = value
     return output_dict
 
 
 def deep_update_dict(base: dict, override: dict) -> dict:
-    """
-    Recursively replaces each key/value in `base` that is also present in `override`
-    When key not in `base`, adds the key.
+    """Deep merge an override dictionary into a deep copy of a base dictionary.
+
+    Args:
+        base: Dictionary providing the initial values.
+        override: Dictionary whose values take precedence over ``base``.
+
+    Returns:
+        A deep-copied merge of ``base`` and ``override``.
     """
     output = deepcopy(base)
 

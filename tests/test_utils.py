@@ -2,6 +2,7 @@ from copy import deepcopy
 
 import pytest
 
+from megaconf.exceptions import FlatKeyConflictError
 from megaconf.utils import convert_flat_dict_to_nested_dict, deep_update_dict
 
 
@@ -45,7 +46,7 @@ class TestConvertFlatDictToNestedDict:
         assert result == {"a": {"b": {"c": 1, "d": 2}}}
 
     def test_conflict_parent_already_scalar_raises(self):
-        with pytest.raises(RuntimeError, match="Duplicate key found"):
+        with pytest.raises(FlatKeyConflictError, match="Duplicate key found"):
             convert_flat_dict_to_nested_dict(
                 {
                     "a": 1,
@@ -64,7 +65,7 @@ class TestConvertFlatDictToNestedDict:
         assert result == {"a": {"b": 2}}
 
     def test_leaf_overwrites(self):
-        with pytest.raises(RuntimeError, match="Duplicate key found"):
+        with pytest.raises(FlatKeyConflictError, match="Duplicate key found"):
             convert_flat_dict_to_nested_dict(
                 {
                     "a.b": 1,
