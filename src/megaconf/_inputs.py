@@ -22,9 +22,7 @@ def load_data_from_file(file_path: Path | str) -> Any:
     file_path = Path(file_path)
 
     if file_path.suffix not in {".yaml", ".yml", ".json"}:
-        raise UnsupportedConfigFileError(
-            "File must end in `.yaml`, `.yml` or `.json`."
-        )
+        raise UnsupportedConfigFileError("File must end in `.yaml`, `.yml` or `.json`.")
 
     with open(file_path, encoding="utf-8") as f:
         if file_path.suffix in [".yaml", ".yml"]:

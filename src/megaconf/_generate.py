@@ -5,10 +5,10 @@ from typing import Literal
 
 from pydantic import TypeAdapter
 
-from .expansion import get_joint_generator, get_product_generator
-from .inputs import load_data_from_file
-from .models import BaseConfigInput, Override, OverridesInput
-from .utils import convert_flat_dict_to_nested_dict, deep_update_dict
+from ._expansion import get_joint_generator, get_product_generator
+from ._inputs import load_data_from_file
+from ._models import BaseConfigInput, Override, OverridesInput
+from ._utils import convert_flat_dict_to_nested_dict, deep_update_dict
 
 
 def _generate_configs(

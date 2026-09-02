@@ -3,7 +3,7 @@ from copy import deepcopy
 import pytest
 
 from megaconf.exceptions import FlatKeyConflictError
-from megaconf.utils import convert_flat_dict_to_nested_dict, deep_update_dict
+from megaconf._utils import convert_flat_dict_to_nested_dict, deep_update_dict
 
 
 class TestConvertFlatDictToNestedDict:

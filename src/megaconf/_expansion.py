@@ -4,6 +4,7 @@ from typing import Literal
 
 import numpy as np
 
+
 def get_joint_generator(joint_config: dict[str, list]) -> Iterator[dict]:
     """Yield joint overrides by zipping aligned list values.
 
@@ -56,9 +57,7 @@ def get_product_generator(
         loop_values = range(n)
     else:
         if n_samples is None:
-            raise ValueError(
-                "`n_samples` required when using sampling."
-            )
+            raise ValueError("`n_samples` required when using sampling.")
         if n_samples < 0:
             raise ValueError("`n_samples` must be non-negative.")
         if sampling == "without_replacement" and n_samples > n:

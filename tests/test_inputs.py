@@ -1,7 +1,7 @@
 import pytest
 
 from megaconf.exceptions import UnsupportedConfigFileError
-from megaconf.inputs import load_data_from_file
+from megaconf._inputs import load_data_from_file
 
 
 def test_unsupported_config_file_raises_domain_exception(tmp_path):
