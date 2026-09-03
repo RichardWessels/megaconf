@@ -5,10 +5,10 @@ from typing import Literal
 
 from pydantic import TypeAdapter
 
-from .expansion import get_joint_generator, get_product_generator
-from .inputs import load_data_from_file
-from .models import BaseConfigInput, Override, OverridesInput
-from .utils import convert_flat_dict_to_nested_dict, deep_update_dict
+from ._expansion import get_joint_generator, get_product_generator
+from ._inputs import load_data_from_file
+from ._models import BaseConfigInput, Override, OverridesInput
+from ._utils import convert_flat_dict_to_nested_dict, deep_update_dict
 
 
 def _generate_configs(
@@ -70,7 +70,7 @@ def generate_configs(
         An iterator of generated configuration dictionaries.
 
     Raises:
-        ValueError: If base config does not resolve to a dictionary.
+        TypeError: If base config does not resolve to a dictionary.
     """
 
     if not isinstance(base_config, dict):
@@ -83,7 +83,7 @@ def generate_configs(
 
     # validation
     if not isinstance(base_config, dict):
-        raise ValueError("Base config must be a dictionary.")
+        raise TypeError("Base config must be a dictionary.")
     overrides_validated = TypeAdapter(list[Override]).validate_python(overrides)
 
     if (

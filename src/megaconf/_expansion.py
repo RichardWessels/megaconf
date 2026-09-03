@@ -40,7 +40,7 @@ def get_product_generator(
         Dictionaries containing one chosen value per product key.
 
     Raises:
-        ValueError: If sampling is enabled without ``n_samples`` or mode is invalid.
+        ValueError: If sampling options are invalid.
     """
 
     if not product_config:
@@ -57,13 +57,23 @@ def get_product_generator(
         loop_values = range(n)
     else:
         if n_samples is None:
-            raise ValueError("Argument `n_samples` required when using sampling.")
+            raise ValueError("`n_samples` required when using sampling.")
+        if n_samples < 0:
+            raise ValueError("`n_samples` must be non-negative.")
+        if sampling == "without_replacement" and n_samples > n:
+            raise ValueError(
+                "`n_samples` cannot exceed the product size when sampling "
+                "without replacement."
+            )
+        if n == 0 and n_samples > 0:
+            raise ValueError(
+                "Cannot sample from a product containing an empty value list."
+            )
         if sampling == "with_replacement":
             loop_values = random.choices(range(n), k=n_samples)
         elif sampling == "without_replacement":
             loop_values = random.sample(range(n), k=n_samples)
         else:
-            # illegal state
             raise ValueError("Invalid value for `sampling` given.")
 
     for num in loop_values:

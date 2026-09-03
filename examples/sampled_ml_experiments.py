@@ -4,7 +4,6 @@ import random
 
 from megaconf import generate_configs
 
-
 base = {
     "dataset": "imagenet-1k",
     "seed": 7,

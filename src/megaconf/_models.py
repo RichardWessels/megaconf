@@ -33,6 +33,7 @@ class Override(BaseModel):
         return joint
 
 
+type FilePath = str | PathLike[str]
 type ConfigDict = dict[str, Any]
-type BaseConfigInput = ConfigDict | str | PathLike[str]
-type OverridesInput = list[dict[str, Any]] | str | PathLike[str]
+type BaseConfigInput = ConfigDict | FilePath
+type OverridesInput = list[dict[str, Any]] | FilePath
