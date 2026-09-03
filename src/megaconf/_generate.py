@@ -70,7 +70,7 @@ def generate_configs(
         An iterator of generated configuration dictionaries.
 
     Raises:
-        ValueError: If base config does not resolve to a dictionary.
+        TypeError: If base config does not resolve to a dictionary.
     """
 
     if not isinstance(base_config, dict):
@@ -83,7 +83,7 @@ def generate_configs(
 
     # validation
     if not isinstance(base_config, dict):
-        raise ValueError("Base config must be a dictionary.")
+        raise TypeError("Base config must be a dictionary.")
     overrides_validated = TypeAdapter(list[Override]).validate_python(overrides)
 
     if (
